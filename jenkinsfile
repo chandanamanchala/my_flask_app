@@ -15,7 +15,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t my-react-app:latest .'
+                    sh 'docker build -t my_flask_app:latest .'
                 }
             }
         }
@@ -23,7 +23,7 @@ pipeline {
         stage('Push to Registry') {
             steps {
                 script {
-                    sh 'docker tag my-react-app:latest registry.digitalocean.com/<your-registry>/my-react-app:latest'
+                    sh 'docker tag my_flask_app:latest registry.digitalocean.com/<your-registry>/my-react-app:latest'
                     sh 'docker push registry.digitalocean.com/<your-registry>/my-react-app:latest'
                 }
             }
