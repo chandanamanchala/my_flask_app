@@ -1,41 +1,44 @@
 pipeline {
-    agent any
+	agent any
 
     triggers {
         cron('H/5 * * * * *') 
     }
+	
+	environment {
+		DOCKERHUB_CRED=credentials('dockerhub')
+		IMAGE_NAME="manchalachandana/my_flask_app"
+	}
+	
+	stages {
+		stage('checkout') {
+			steps {
+				git url:'https://github.com/chandanamanchala/my_flask_app.git', branch:'main'
+			}
+		}
 
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/chandanamanchala/my_flask_app.git'
-            }
-        }
+		stage('Build Maven Project') {
+			steps {
+				sh "mvn clean package -DskipTests"
+			}
+		}
+		
+		stage('Build Docker Image') {
+            		steps {
+                		script {
+                    			dockerImage = docker.build("${IMAGE_NAME}:latest")
+                		}
+            		}
+        	}
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    sh 'docker build -t my_flask_app:latest .'
-                }
-            }
-        }
-
-        stage('Push to Registry') {
-            steps {
-                script {
-                    sh 'docker tag my-react-app:latest registry.digitalocean.com/<your-registry>/my_flask_app:latest'
-                    sh 'docker push registry.digitalocean.com/<your-registry>/my_flask_app:latest'
-                }
-            }
-        }
-
-        stage('Deploy to DigitalOcean') {
-            steps {
-                script {
-                    // Assuming you use Docker on DO droplet
-                    sh 'ssh root@<your-droplet-ip> "docker pull registry.digitalocean.com/<your-registry>/my-react-app:latest && docker stop react-app || true && docker run -d --name react-app -p 80:80 registry.digitalocean.com/<your-registry>/my-react-app:latest"'
-                }
-            }
-        }
-    }
-}
+		stage('Push Docker Image'){
+			steps {
+				script {
+					docker.withRegistry('https://index.docker.io/v1/','dockerhub'){
+						dockerImage.push()
+					}
+				}
+			}
+		}	
+	}
+	
