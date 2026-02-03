@@ -9,7 +9,7 @@ pipeline {
 	stages {
 		stage('checkout') {
 			steps {
-				git url:'<github_repo_ssh_url>', branch:'main'
+				git url:'https://github.com/chandanamanchala/my_flask_app.git', branch:'main'
 			}
 		}
 
